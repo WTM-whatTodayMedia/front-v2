@@ -9,31 +9,23 @@ import * as S from "./styled";
 import Error404Icon from "@/assets/svg/Error404Icon";
 import { getRandomNumFromArrayLength } from "@/utils/getRandomNumFromArrayLength";
 import { usePathname } from "next/navigation";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { CategoryType, TitleType, UrlType } from "@/types/databaseObjectKey";
 
-const Home = ({ initList }: { initList: listProps[] }) => {
+const Home = ({ initList }: { initList: DatabaseObjectResponse[] }) => {
   const setImgUrl = useSetRecoilState(imgAtom);
   const [list] = useState(initList);
   const rn = getRandomNumFromArrayLength(initList);
   const pathname = usePathname();
+  console.log(initList[0].properties);
 
   useEffect(() => {
-    setImgUrl([
-      initList[rn]?.cover?.external?.url ??
-        initList[rn]?.cover?.file?.url ??
-        "",
-      initList[rn]?.properties.Name.title[0].text.content,
-    ]);
+    const imgTitle = list[rn].properties.Name as TitleType;
+    const imgUrl = initList[rn]?.cover as UrlType;
+    setImgUrl([imgUrl.external.url, imgTitle.title[0]["plain_text"]]);
   }, []);
 
-  // useEffect(() => {
-  //   async function a() {
-  //     const data = await getFilterListAction(filterItems.join(" "));
-  //     setList(data);
-  //   }
-  //   a();
-  // }, [filterItems]);
-
-  if (list.length <= 0 && pathname !== "/") {
+  if (list && list.length <= 0 && pathname !== "/") {
     return (
       <S.EmptyList>
         <Error404Icon />
@@ -45,14 +37,18 @@ const Home = ({ initList }: { initList: listProps[] }) => {
   return (
     <SC.Wrapper>
       <SC.ListWrapper>
-        {list.map((i) => (
-          <ListBox
-            key={i.id}
-            cover={i.cover}
-            title={i.properties.Name.title[0]?.text.content}
-            categorys={i.properties.Category.multi_select}
-          />
-        ))}
+        {list?.map((i) => {
+          const boxTitle = i.properties.Name as TitleType;
+          const bixCategory = i.properties.Category as CategoryType;
+          return (
+            <ListBox
+              key={i.id}
+              cover={i.cover as UrlType}
+              title={boxTitle.title[0]["plain_text"]}
+              categorys={bixCategory.multi_select.options}
+            />
+          );
+        })}
       </SC.ListWrapper>
     </SC.Wrapper>
   );

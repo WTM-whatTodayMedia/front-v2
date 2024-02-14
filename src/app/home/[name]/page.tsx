@@ -1,11 +1,8 @@
-import { getAllList } from "@/api/list";
+import { notionAllData } from "@/api/list";
 import Home from "@/components/Home";
-import { listProps } from "@/types";
-import { Props } from "@/types/common";
-import { decodeParams } from "@/utils/decodeParams";
 
-export default async function HomePage({ params: { name } }: Props) {
-  const list: listProps[] = await getAllList(decodeParams(name));
+export default async function HomePage() {
+  const list = await notionAllData();
 
   return <Home initList={list} />;
 }
